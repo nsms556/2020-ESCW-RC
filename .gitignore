@@ -6,4 +6,4 @@
 
 # directory
 ./.vscode
-./_pycache
+./__pycache__
