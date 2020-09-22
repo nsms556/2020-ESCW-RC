@@ -1,0 +1,91 @@
+from time import time, sleep
+
+import cwiid as WII
+
+import rcutils.Wiimote as Wiimote
+import rcutils.Car as Car
+from rcutils.WiiAdapter import WiiAdapter
+from rcutils.RCStatic import *
+import rcutils.RCUtils as util
+
+import AIController
+import cv2
+
+def changeMode(nowMode, lastCtrlTime) :
+    newMode = nowMode
+    ctrlTime = lastCtrlTime
+
+    if time() - ctrlTime > CONTROL_IGNORE :
+        newMode = nowMode ^ True
+        ctrlTime = time()
+
+    return newMode, ctrlTime
+
+def cameraOpen() :
+    camera = cv2.VideoCapture(0, cv2.CAP_V4L)
+
+    if camera.isOpened() :
+        camera.set(3, 960)
+        camera.set(4, 540)
+    else :
+        print('NoVideo')
+        exit()
+    
+    return camera
+
+wii = Wiimote.Wiimote()
+car = Car.Car()
+cam = cameraOpen()
+AI = AIController.AIController(cam, wii)
+adapter = WiiAdapter(wii)
+autoMode = False
+modeCtrlTime = time()
+
+while True :
+    try :
+        if autoMode == DRIVE_AUTO :
+            # Set Value from Auto to Car
+            print('Drive Auto')
+            
+            steer = AI.steerValue()
+            shift = AI.shiftState(car.shift)
+
+            # Performing State from TSRlist to Pop
+            #TSRlist = AI.runTSR()
+
+            if wii.getButtonState() - WII.BTN_RIGHT == 0 :
+                raise util.ModeException
+        else :
+            # Set Value from Wii to Car
+            print('Drive Manual')
+
+            shift = adapter.shiftState()
+            steer = adapter.steerValue()
+            speed = adapter.speedValue(car.speed, car.shift, car.cruise)
+            cruise, CRCtrlTime = adapter.cruiseState(car.cruise, car.speed,
+                    car.shift, car.CRCtrlTime)
+            headLight, HLCtrlTime = adapter.headLightState(car.headLight, car.HLCtrlTime)
+            quitCtrl = adapter.quitState()
+
+            if wii.getButtonState() - WII.BTN_RIGHT == 0 :
+                raise util.ModeException
+            
+    except util.ModeException :
+        autoMode, modeCtrlTime = changeMode(autoMode, modeCtrlTime)
+        continue
+
+    car.setShift(shift)
+    car.setCruise(cruise, CRCtrlTime)
+    car.setSpeed(speed)
+    car.setSteer(steer)
+    car.setHeadLight(headLight, HLCtrlTime)
+    car.setQuitCtrl(quitCtrl)
+    
+    try :
+        car.drive()
+    except util.QuitException :
+        del(car)
+        cv2.destroyAllWindows()
+        break
+    
+    sleep(DRIVE_DELAY)
