@@ -1,3 +1,9 @@
+from time import time
+
+import cv2
+
+from rcutils.RCStatic import CONTROL_IGNORE
+
 def waveTimeToDis(time) :
     return time / 58.0
 
@@ -18,3 +24,27 @@ class QuitException(Exception) :
 
 class ModeException(Exception) :
     pass
+
+def changeMode(nowMode, lastCtrlTime) :
+    newMode = nowMode
+    ctrlTime = lastCtrlTime
+
+    if time() - ctrlTime > CONTROL_IGNORE :
+        newMode = nowMode ^ True
+        ctrlTime = time()
+
+    print('Driving Assist Mode : {}'.format(newMode))
+
+    return newMode, ctrlTime
+
+def cameraOpen() :
+    camera = cv2.VideoCapture(0, cv2.CAP_V4L)
+
+    if camera.isOpened() :
+        camera.set(3, 960)
+        camera.set(4, 540)
+    else :
+        print('NoVideo')
+        exit()
+    
+    return camera

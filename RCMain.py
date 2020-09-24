@@ -11,53 +11,36 @@ import rcutils.RCUtils as util
 import AIController
 import cv2
 
-def changeMode(nowMode, lastCtrlTime) :
-    newMode = nowMode
-    ctrlTime = lastCtrlTime
-
-    if time() - ctrlTime > CONTROL_IGNORE :
-        newMode = nowMode ^ True
-        ctrlTime = time()
-
-    return newMode, ctrlTime
-
-def cameraOpen() :
-    camera = cv2.VideoCapture(0, cv2.CAP_V4L)
-
-    if camera.isOpened() :
-        camera.set(3, 960)
-        camera.set(4, 540)
-    else :
-        print('NoVideo')
-        exit()
-    
-    return camera
-
 wii = Wiimote.Wiimote()
 car = Car.Car()
-cam = cameraOpen()
-AI = AIController.AIController(cam, wii)
+cam = util.cameraOpen()
 adapter = WiiAdapter(wii)
+
 autoMode = False
 modeCtrlTime = time()
 
+print('Loading AI Model...')
+AI = AIController.AIController(cam, wii)
+
+print('RC Power ON')
 while True :
     try :
         if autoMode == DRIVE_AUTO :
             # Set Value from Auto to Car
-            print('Drive Auto')
+            #print('Drive Auto')
             
             steer = AI.steerValue()
             shift = AI.shiftState(car.shift)
 
             # Performing State from TSRlist to Pop
-            #TSRlist = AI.runTSR()
+            TSRlist = AI.runTSR()
+            print('Found Sign : {}'.format(TSRlist))
 
             if wii.getButtonState() - WII.BTN_RIGHT == 0 :
                 raise util.ModeException
         else :
             # Set Value from Wii to Car
-            print('Drive Manual')
+            #print('Drive Manual')
 
             shift = adapter.shiftState()
             steer = adapter.steerValue()
@@ -71,7 +54,7 @@ while True :
                 raise util.ModeException
             
     except util.ModeException :
-        autoMode, modeCtrlTime = changeMode(autoMode, modeCtrlTime)
+        autoMode, modeCtrlTime = util.changeMode(autoMode, modeCtrlTime)
         continue
 
     car.setShift(shift)
@@ -89,3 +72,5 @@ while True :
         break
     
     sleep(DRIVE_DELAY)
+
+print('RC Power OFF')

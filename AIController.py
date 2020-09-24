@@ -1,25 +1,15 @@
 from time import time
+import cv2, argparse
+
+import cwiid as WII
 
 from LaneDetect_CV2 import laneDetectCV2
 from rcutils.RCStatic import *
-import cwiid as WII
 import video
-import cv2, argparse
-
-import torch
-from torch.autograd import Variable
-
-from models import *
-from utils.utils import *
-
-CUDA = torch.cuda.is_available()
-deviceNo =  'cuda:0' if CUDA else 'cpu'
-Tensor = torch.cuda.FloatTensor if CUDA else torch.FloatTensor
-device = torch.device(deviceNo)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_def", type=str, default="config/yolov3-custom-test_ver1.cfg", help="path to model definition file")
-parser.add_argument("--weights_path", type=str, default="weights/TSRver1.pth", help="path to weights file")
+parser.add_argument("--model_def", type=str, default="config/TSRver2.cfg", help="path to model definition file")
+parser.add_argument("--weights_path", type=str, default="weights/TSRver2.pth", help="path to weights file")
 parser.add_argument("--class_path", type=str, default="config/classes.names", help="path to class label file")
 parser.add_argument("--conf_thres", type=float, default=0.8, help="object confidence threshold")
 parser.add_argument("--nms_thres", type=float, default=0.4, help="iou thresshold for non-maximum suppression")
@@ -38,13 +28,11 @@ class AIController :
         self.laneDetect = laneDetectCV2()
     
     def shiftState(self, state) :
-        newState = state
-
         buttons = self.wii.getButtonState()
 
         if buttons & WII.BTN_2 :
             newState = SHIFT_FORWARD
-        elif buttons & WII.BTN_1 :
+        else :
             newState = SHIFT_STOP
 
         return newState

@@ -5,6 +5,7 @@ import time, datetime
 import argparse
 
 import cv2
+import matplotlib.pyplot as plt
 
 import torch
 from torch.autograd import Variable
@@ -12,8 +13,6 @@ from torch.autograd import Variable
 from models import *
 from utils.utils import *
 from utils.datasets import *
-
-import matplotlib.pyplot as plt
 
 CUDA = torch.cuda.is_available()
 deviceNo =  'cuda:0' if CUDA else 'cpu'
