@@ -7,7 +7,7 @@
 
 # directory
 ./.vscode
-./__pycache__
+__pycache__/*
 
 # Backup File
 *.bak
