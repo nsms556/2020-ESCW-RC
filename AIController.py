@@ -105,6 +105,7 @@ def convertSteer(value) :
     return int(195 - (value / 6 * 5))
 
 if __name__ == "__main__" :
+    import torch
     print(opt) 
 
     cam = cv2.VideoCapture(0, cv2.CAP_V4L)
@@ -121,7 +122,7 @@ if __name__ == "__main__" :
     while True :
         _, frame = cam.read()
 
-        steer = test.steerValue(True)
+        steer = test.steerValue()
         tsr = test.runTSR(True)
 
         print(steer)
