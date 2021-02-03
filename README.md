@@ -22,10 +22,19 @@
  - 초음파 센서를 사용한 후방 충돌 방지 기능
  - Google Colabolatory를 통해 모델 학습, 학습된 모델을 탐지 알고리즘에 적용
  
+## Wii-RCCAR 대비 변경점
+ - GPU 기반 머신러닝을 위해 라즈베리 파이 -> 젯슨 나노 개발킷으로 변경
+ - 젯슨 나노 개발킷에 무선 관련 기능이 없어 무선랜/블루투스 카드 추가
+ - 영상 촬영을 위한 카메라 추가
+ - 후방 거리 측정을 위한 초음파 센서 추가
+ - GPIO PWM 문제로 DC 모터 드라이버 교체 및 크루즈 기능 삭제
+ 
 ## Need Library
  + PyTorch-YOLOv3
  + cwiid
-
+ + Jetson.GPIO
+ + OpenCV
+ 
 ## Reference
  + https://github.com/eriklindernoren/PyTorch-YOLOv3
  + https://github.com/abstrakraft/cwiid
